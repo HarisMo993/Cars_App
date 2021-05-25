@@ -3,28 +3,24 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Cars.Domain.Interfaces
 {
     public interface IRepository<T> where T : class
     {
-        T Get(int id);
-
-        IEnumerable<T> GetAll(
-            Expression<Func<T, bool>> filter = null,
+        Task<ICollection<T>> FindAll(
+            Expression<Func<T, bool>> expression = null,
             Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
-            string includeProperties = null
+            List<string> includeProperties = null
             );
-
-        T GetFirstOrDefault(
-            Expression<Func<T, bool>> filter = null,
-            string includeProperties = null
+        Task<T> Find(
+            Expression<Func<T, bool>> expression = null,
+            List<string> includeProperties = null
             );
-
-        void Add(T entity);
-
-        void Remove(int id);
-
-        void Remove(T entity);
+        Task<bool> isExists(Expression<Func<T, bool>> expression = null);
+        Task Create(T entity);
+        void Update(T entity);
+        void Delete(T entity);
     }
 }

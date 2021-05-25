@@ -1,5 +1,5 @@
-﻿using Cars.Application.Interfaces;
-using Cars.Application.Services;
+﻿
+using Cars.Application.Mappings;
 using Cars.Domain.Interfaces;
 using Cars.Infra.Data.Repository;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,16 +14,13 @@ namespace Cars.Infra.IoC
         public static void RegisterServices(IServiceCollection services)
         {
             //Application Layer
-            services.AddScoped<IVehicleMakeService, VehicleMakeService>();
-            services.AddScoped<IVehicleModelService, VehicleModelService>();
-
-            services.AddTransient<IUnitOfWorkService, UnitOfWorkService>();
+            services.AddAutoMapper(typeof(Maps));
 
             //Infra.Data Layer
             services.AddScoped<IVehicleMakeRepository, VehicleMakeRepository>();
             services.AddScoped<IVehicleModelRepository, VehicleModelRepository>();
 
-            services.AddTransient<IUnitOfWorkRepository, UnitOfWorkRepository>();
+            services.AddTransient<IUnitOfWork, UnitOfWork>();
         }
     }
 }

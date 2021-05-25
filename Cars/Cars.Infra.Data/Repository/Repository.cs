@@ -6,83 +6,80 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Cars.Infra.Data.Repository
 {
     public class Repository<T> : IRepository<T> where T : class
     {
         protected readonly DbContext _context;
-        internal DbSet<T> dbSet;
+        internal DbSet<T> _db;
 
         public Repository(DbContext context)
         {
             _context = context;
-            this.dbSet = context.Set<T>();
+            _db = context.Set<T>();
         }
 
-        public void Add(T entity)
+        public async Task Create(T entity)
         {
-            dbSet.Add(entity);
+            await _db.AddAsync(entity);
         }
 
-        public T Get(int id)
+        public void Delete(T entity)
         {
-            return dbSet.Find(id);
+            _db.Remove(entity);
         }
 
-        public IEnumerable<T> GetAll(Expression<Func<T, bool>> filter = null, Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null, string includeProperties = null)
+        public async Task<T> Find(Expression<Func<T, bool>> expression, List<string> includeProperties = null)
         {
-            IQueryable<T> query = dbSet;
+            IQueryable<T> query = _db;
 
-            if (filter != null)
+            if (includeProperties != null)
             {
-                query = query.Where(filter);
+                foreach (var table in includeProperties)
+                {
+                    query = query.Include(table);
+                }
+            }
+
+            return await query.FirstOrDefaultAsync(expression);
+        }
+
+        public async Task<ICollection<T>> FindAll(Expression<Func<T, bool>> expression = null, Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null, List<string> includeProperties = null)
+        {
+            IQueryable<T> query = _db;
+
+            if (expression != null)
+            {
+                query = query.Where(expression);
             }
 
             if (includeProperties != null)
             {
-                foreach (var includeProperty in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                foreach (var table in includeProperties)
                 {
-                    query = query.Include(includeProperty);
+                    query = query.Include(table);
                 }
             }
 
             if (orderBy != null)
             {
-                return orderBy(query).ToList();
-            }
-            return query.ToList();
-        }
-
-        public T GetFirstOrDefault(Expression<Func<T, bool>> filter = null, string includeProperties = null)
-        {
-            IQueryable<T> query = dbSet;
-
-            if (filter != null)
-            {
-                query = query.Where(filter);
+                query = orderBy(query);
             }
 
-            if (includeProperties != null)
-            {
-                foreach (var includeProperty in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-                {
-                    query = query.Include(includeProperty);
-                }
-            }
-
-            return query.FirstOrDefault();
+            return await query.ToListAsync();
         }
 
-        public void Remove(int id)
+        public async Task<bool> isExists(Expression<Func<T, bool>> expression = null)
         {
-            T entityToRemove = dbSet.Find(id);
-            Remove(entityToRemove);
+            IQueryable<T> query = _db;
+            return await query.AnyAsync(expression);
         }
 
-        public void Remove(T entity)
+        public void Update(T entity)
         {
-            dbSet.Remove(entity);
+            _db.Update(entity);
         }
     }
 }

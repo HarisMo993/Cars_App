@@ -7,6 +7,8 @@ namespace Cars.Application.ViewModels
 {
     public class VehicleMakeViewModel
     {
-        public IEnumerable<VehicleMake> VehicleMakes { get; set; }
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Abrv { get; set; }
     }
 }
